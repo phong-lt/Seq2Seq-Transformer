@@ -6,8 +6,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description='Seq2Seq Args')
 
-    parser.add_argument('--mode', dest='run_mode',
-                      choices=['train', 'val'],
+    parser.add_argument("--mode", choices=['train', 'val'],
                       help='{train, val}',
                       type=str, required=True)
     

@@ -1,7 +1,7 @@
 from torch.utils.data import Dataset
 import pandas as pd
 from collections import Counter
-from utils import SimpleVocab
+from .utils import SimpleVocab
 
 class Seq2SeqDataset(Dataset):
   def __init__(self,

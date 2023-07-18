@@ -2,7 +2,7 @@ import re
 import string
 import unidecode
 import torch
-from Vocab import SimpleVocab
+from .Vocab import SimpleVocab
 
 def remove_emoji(string):
     emoji_pattern = re.compile("["

@@ -1,2 +1,2 @@
-from Preporcessing import *
-from Vocab import SimpleVocab
+from .Preporcessing import *
+from .Vocab import SimpleVocab

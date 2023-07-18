@@ -10,7 +10,7 @@ def create_mask(src, trg, Vocab, DEVICE):
     src_seq_len = src.shape[0]
     trg_seq_len = trg.shape[0]
 
-    trg_mask = generate_square_subsequent_mask(trg_seq_len)
+    trg_mask = generate_square_subsequent_mask(trg_seq_len, DEVICE)
     src_mask = torch.zeros((src_seq_len, src_seq_len),device=DEVICE).type(torch.bool)
 
     src_padding_mask = (src == Vocab.PAD).transpose(0, 1)

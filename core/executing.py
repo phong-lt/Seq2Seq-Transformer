@@ -4,9 +4,9 @@ import torch
 from torch.utils.data import DataLoader
 from .data.Dataset import Seq2SeqDataset
 
-from model.Seq2SeqTransformer import Seq2SeqTransformer 
+from .model.Seq2SeqTransformer import Seq2SeqTransformer 
 
-from model.utils.masking import create_mask
+from .model.utils.masking import create_mask
 from .data.utils import SimpleVocab, tokenizing, seq2seq_collate
 
 from timeit import default_timer as timer
@@ -18,10 +18,11 @@ class Executor():
         self.collate_fn = seq2seq_collate
         
         self.eval_epoch = config.EVAL_EPOCH
+
         if config.SEP_VOCAB: 
             src_vocab_size, trg_vocab_size = self._create_dataloader()
-        
-        src_vocab_size = trg_vocab_size = self._create_dataloader()
+        else:
+            src_vocab_size = trg_vocab_size = self._create_dataloader()
 
         self.model = Seq2SeqTransformer(num_encoder_layers = config.NUM_ENCODER_LAYERS,
                                         num_decoder_layers = config.NUM_DECODER_LAYERS,
@@ -35,7 +36,7 @@ class Executor():
                 torch.nn.init.xavier_uniform_(p)
         self.model = self.model.to(self.config.DEVICE)
 
-        self.optim = torch.optim.Adam(self.model.parameters(), lr=config.LR, betas=config.BETAS, eps=config.EPS)
+        self.optim = torch.optim.Adam(self.model.parameters(), lr=config.LR, betas=config.BETAS, eps=1e-9)
 
         self.loss_fn = torch.nn.CrossEntropyLoss(ignore_index=SimpleVocab.PAD)
         
@@ -120,6 +121,7 @@ class Executor():
                                             sep_vocab = self.config.SEP_VOCAB)
             self.val_loader = DataLoader(dataset = self.train_data, batch_size=self.config.BATCH_SIZE, shuffle=True, collate_fn = self.collate_fn) 
         
+
         if self.config.SEP_VOCAB:
             return len(self.train_data.src_vocab), len(self.train_data.src_vocab)
         
@@ -136,7 +138,7 @@ class Executor():
 
             trg_input = trg[:-1, :]
 
-            src_mask, trg_mask, src_padding_mask, trg_padding_mask = create_mask(src, trg_input)
+            src_mask, trg_mask, src_padding_mask, trg_padding_mask = create_mask(src, trg_input, SimpleVocab, self.config.DEVICE)
 
             logits = self.model(src, trg_input, src_mask, trg_mask,src_padding_mask, trg_padding_mask, src_padding_mask)
 
@@ -149,7 +151,7 @@ class Executor():
             self.optim.step()
             losses += loss.item()
 
-        return losses / len(list(self.save_besttrain_loader))
+        return losses / len(list(self.train_loader))
 
 
     def _evaluate_epoch(self):
@@ -162,7 +164,7 @@ class Executor():
 
             trg_input = trg[:-1, :]
 
-            src_mask, trg_mask, src_padding_mask, trg_padding_mask = create_mask(src, trg_input)
+            src_mask, trg_mask, src_padding_mask, trg_padding_mask = create_mask(src, trg_input, SimpleVocab, self.config.DEVICE)
 
             logits = self.model(src, trg_input, src_mask, trg_mask, src_padding_mask, trg_padding_mask, src_padding_mask)
 
